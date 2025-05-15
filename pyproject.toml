@@ -103,7 +103,6 @@ dependencies = [
     "youtube-transcript-api==1.0.3",
     "pytube==15.0.0",
 
-    "extract_msg",
     "pydub",
     "duckduckgo-search~=8.0.0",
 
