@@ -63,7 +63,7 @@ dependencies = [
     "transformers",
     "sentence-transformers==4.1.0",
     "accelerate",
-    "colbert-ai==0.2.21",
+    "colbert-ai @ git+https://github.com/stanford-futuredata/ColBERT.git@8627585ad290c21720eaa54e325e7c8c301d15f6",
     "einops==0.8.1",
 
     "ftfy==6.2.3",
