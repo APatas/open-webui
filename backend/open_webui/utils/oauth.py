@@ -41,6 +41,7 @@ from open_webui.config import (
 )
 from open_webui.constants import ERROR_MESSAGES, WEBHOOK_MESSAGES
 from open_webui.env import (
+    AIOHTTP_CLIENT_SESSION_SSL,
     WEBUI_NAME,
     WEBUI_AUTH_COOKIE_SAME_SITE,
     WEBUI_AUTH_COOKIE_SECURE,
@@ -305,8 +306,10 @@ class OAuthManager:
                 get_kwargs["headers"] = {
                     "Authorization": f"Bearer {access_token}",
                 }
-            async with aiohttp.ClientSession() as session:
-                async with session.get(picture_url, **get_kwargs) as resp:
+            async with aiohttp.ClientSession(trust_env=True) as session:
+                async with session.get(
+                    picture_url, **get_kwargs, ssl=AIOHTTP_CLIENT_SESSION_SSL
+                ) as resp:
                     if resp.ok:
                         picture = await resp.read()
                         base64_encoded_picture = base64.b64encode(picture).decode(
@@ -371,7 +374,9 @@ class OAuthManager:
                     headers = {"Authorization": f"Bearer {access_token}"}
                     async with aiohttp.ClientSession(trust_env=True) as session:
                         async with session.get(
-                            "https://api.github.com/user/emails", headers=headers
+                            "https://api.github.com/user/emails",
+                            headers=headers,
+                            ssl=AIOHTTP_CLIENT_SESSION_SSL,
                         ) as resp:
                             if resp.ok:
                                 emails = await resp.json()
@@ -530,6 +535,19 @@ class OAuthManager:
                 samesite=WEBUI_AUTH_COOKIE_SAME_SITE,
                 secure=WEBUI_AUTH_COOKIE_SECURE,
             )
+            oauth_access_token = token.get("access_token")
+            response.set_cookie(
+                key="oauth_access_token",
+                value=oauth_access_token,
+                httponly=True,
+                samesite=WEBUI_AUTH_COOKIE_SAME_SITE,
+                secure=WEBUI_AUTH_COOKIE_SECURE,
+            )
         # Redirect back to the frontend with the JWT token
-        redirect_url = f"{request.base_url}auth#token={jwt_token}"
+
+        redirect_base_url = request.app.state.config.WEBUI_URL or request.base_url
+        if isinstance(redirect_base_url, str) and redirect_base_url.endswith("/"):
+            redirect_base_url = redirect_base_url[:-1]
+        redirect_url = f"{redirect_base_url}/auth#token={jwt_token}"
+
         return RedirectResponse(url=redirect_url, headers=response.headers)

@@ -17,6 +17,7 @@
 
 	// Addons
 	let titleAutoGenerate = true;
+	let autoFollowUps = true;
 	let autoTags = true;
 
 	let responseAutoCopy = false;
@@ -31,6 +32,8 @@
 
 	let notificationSound = true;
 	let notificationSoundAlways = false;
+
+	let highContrastMode = false;
 
 	let detectArtifacts = true;
 
@@ -83,6 +86,11 @@
 	const toggleSplitLargeChunks = async () => {
 		splitLargeChunks = !splitLargeChunks;
 		saveSettings({ splitLargeChunks: splitLargeChunks });
+	};
+
+	const toggleHighContrastMode = async () => {
+		highContrastMode = !highContrastMode;
+		saveSettings({ highContrastMode: highContrastMode });
 	};
 
 	const togglePromptAutocomplete = async () => {
@@ -190,6 +198,11 @@
 		});
 	};
 
+	const toggleAutoFollowUps = async () => {
+		autoFollowUps = !autoFollowUps;
+		saveSettings({ autoFollowUps });
+	};
+
 	const toggleAutoTags = async () => {
 		autoTags = !autoTags;
 		saveSettings({ autoTags });
@@ -279,33 +292,36 @@
 
 	onMount(async () => {
 		titleAutoGenerate = $settings?.title?.auto ?? true;
-		autoTags = $settings.autoTags ?? true;
+		autoTags = $settings?.autoTags ?? true;
+		autoFollowUps = $settings?.autoFollowUps ?? true;
 
-		detectArtifacts = $settings.detectArtifacts ?? true;
-		responseAutoCopy = $settings.responseAutoCopy ?? false;
+		highContrastMode = $settings?.highContrastMode ?? false;
 
-		showUsername = $settings.showUsername ?? false;
-		showUpdateToast = $settings.showUpdateToast ?? true;
-		showChangelog = $settings.showChangelog ?? true;
+		detectArtifacts = $settings?.detectArtifacts ?? true;
+		responseAutoCopy = $settings?.responseAutoCopy ?? false;
 
-		showEmojiInCall = $settings.showEmojiInCall ?? false;
-		voiceInterruption = $settings.voiceInterruption ?? false;
+		showUsername = $settings?.showUsername ?? false;
+		showUpdateToast = $settings?.showUpdateToast ?? true;
+		showChangelog = $settings?.showChangelog ?? true;
 
-		richTextInput = $settings.richTextInput ?? true;
-		promptAutocomplete = $settings.promptAutocomplete ?? false;
-		largeTextAsFile = $settings.largeTextAsFile ?? false;
-		copyFormatted = $settings.copyFormatted ?? false;
+		showEmojiInCall = $settings?.showEmojiInCall ?? false;
+		voiceInterruption = $settings?.voiceInterruption ?? false;
 
-		collapseCodeBlocks = $settings.collapseCodeBlocks ?? false;
-		expandDetails = $settings.expandDetails ?? false;
+		richTextInput = $settings?.richTextInput ?? true;
+		promptAutocomplete = $settings?.promptAutocomplete ?? false;
+		largeTextAsFile = $settings?.largeTextAsFile ?? false;
+		copyFormatted = $settings?.copyFormatted ?? false;
 
-		landingPageMode = $settings.landingPageMode ?? '';
-		chatBubble = $settings.chatBubble ?? true;
-		widescreenMode = $settings.widescreenMode ?? false;
-		splitLargeChunks = $settings.splitLargeChunks ?? false;
-		scrollOnBranchChange = $settings.scrollOnBranchChange ?? true;
-		chatDirection = $settings.chatDirection ?? 'auto';
-		userLocation = $settings.userLocation ?? false;
+		collapseCodeBlocks = $settings?.collapseCodeBlocks ?? false;
+		expandDetails = $settings?.expandDetails ?? false;
+
+		landingPageMode = $settings?.landingPageMode ?? '';
+		chatBubble = $settings?.chatBubble ?? true;
+		widescreenMode = $settings?.widescreenMode ?? false;
+		splitLargeChunks = $settings?.splitLargeChunks ?? false;
+		scrollOnBranchChange = $settings?.scrollOnBranchChange ?? true;
+		chatDirection = $settings?.chatDirection ?? 'auto';
+		userLocation = $settings?.userLocation ?? false;
 
 		notificationSound = $settings?.notificationSound ?? true;
 		notificationSoundAlways = $settings?.notificationSoundAlways ?? false;
@@ -315,19 +331,19 @@
 
 		stylizedPdfExport = $settings?.stylizedPdfExport ?? true;
 
-		hapticFeedback = $settings.hapticFeedback ?? false;
-		ctrlEnterToSend = $settings.ctrlEnterToSend ?? false;
+		hapticFeedback = $settings?.hapticFeedback ?? false;
+		ctrlEnterToSend = $settings?.ctrlEnterToSend ?? false;
 
-		imageCompression = $settings.imageCompression ?? false;
-		imageCompressionSize = $settings.imageCompressionSize ?? { width: '', height: '' };
+		imageCompression = $settings?.imageCompression ?? false;
+		imageCompressionSize = $settings?.imageCompressionSize ?? { width: '', height: '' };
 
 		defaultModelId = $settings?.models?.at(0) ?? '';
 		if ($config?.default_models) {
 			defaultModelId = $config.default_models.split(',')[0];
 		}
 
-		backgroundImageUrl = $settings.backgroundImageUrl ?? null;
-		webSearch = $settings.webSearch ?? null;
+		backgroundImageUrl = $settings?.backgroundImageUrl ?? null;
+		webSearch = $settings?.webSearch ?? null;
 	});
 </script>
 
@@ -369,6 +385,28 @@
 	<div class=" space-y-3 overflow-y-scroll max-h-[28rem] lg:max-h-full">
 		<div>
 			<div class=" mb-1.5 text-sm font-medium">{$i18n.t('UI')}</div>
+
+			<div>
+				<div class=" py-0.5 flex w-full justify-between">
+					<div class=" self-center text-xs">
+						{$i18n.t('High Contrast Mode')} ({$i18n.t('Beta')})
+					</div>
+
+					<button
+						class="p-1 px-3 text-xs flex rounded-sm transition"
+						on:click={() => {
+							toggleHighContrastMode();
+						}}
+						type="button"
+					>
+						{#if highContrastMode === true}
+							<span class="ml-2 self-center">{$i18n.t('On')}</span>
+						{:else}
+							<span class="ml-2 self-center">{$i18n.t('Off')}</span>
+						{/if}
+					</button>
+				</div>
+			</div>
 
 			<div>
 				<div class=" py-0.5 flex w-full justify-between">
@@ -580,6 +618,26 @@
 						type="button"
 					>
 						{#if titleAutoGenerate === true}
+							<span class="ml-2 self-center">{$i18n.t('On')}</span>
+						{:else}
+							<span class="ml-2 self-center">{$i18n.t('Off')}</span>
+						{/if}
+					</button>
+				</div>
+			</div>
+
+			<div>
+				<div class=" py-0.5 flex w-full justify-between">
+					<div class=" self-center text-xs">{$i18n.t('Follow-Up Auto-Generation')}</div>
+
+					<button
+						class="p-1 px-3 text-xs flex rounded-sm transition"
+						on:click={() => {
+							toggleAutoFollowUps();
+						}}
+						type="button"
+					>
+						{#if autoFollowUps === true}
 							<span class="ml-2 self-center">{$i18n.t('On')}</span>
 						{:else}
 							<span class="ml-2 self-center">{$i18n.t('Off')}</span>
